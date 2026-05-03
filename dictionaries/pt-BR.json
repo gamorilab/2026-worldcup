@@ -1,4 +1,22 @@
 {
+  "meta": {
+    "siteName": "Copa 2026 no horário do Brasil",
+    "title": "Tabela da Copa do Mundo 2026 no horário do Brasil",
+    "description": "Os 104 jogos da Copa do Mundo 2026 com horário convertido para o Brasil. Filtre por seleção, fase, data ou país-sede e ache o seu jogo em segundos.",
+    "ogTitle": "Copa do Mundo 2026: tabela completa no horário do Brasil",
+    "ogDescription": "Acompanhe os 104 jogos da Copa 2026, da fase de grupos à final, com horário do Brasil e filtros rápidos por seleção e fase.",
+    "keywords": [
+      "Copa do Mundo 2026",
+      "tabela Copa 2026",
+      "horário do Brasil",
+      "FIFA 2026",
+      "jogos da Copa",
+      "fase de grupos",
+      "mata-mata",
+      "Estados Unidos México Canadá"
+    ],
+    "ogLocale": "pt_BR"
+  },
   "page": {
     "badge": "Copa do Mundo 2026",
     "title": "Tabela em horário do Brasil, todos os jogos, todas as fases",

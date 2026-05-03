@@ -1,14 +1,56 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ScheduleShell } from "@/components/schedule/schedule-shell";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { hasLocale } from "@/lib/i18n/config";
+import { SITE_URL, buildLanguageAlternates } from "@/lib/seo";
 import { getWorldCupFixtures } from "@/lib/world-cup/source";
 
 type LangPageProps = {
   params: Promise<{ lang: string }>;
 };
+
+export async function generateMetadata({ params }: LangPageProps): Promise<Metadata> {
+  const { lang } = await params;
+
+  if (!hasLocale(lang)) {
+    return {};
+  }
+
+  const dictionary = await getDictionary(lang);
+  const { meta } = dictionary;
+  const canonical = `${SITE_URL}/${lang}`;
+  const alternateLocales = (["pt_BR", "en_US", "es_ES"] as const).filter(
+    (value) => value !== meta.ogLocale,
+  );
+
+  return {
+    title: { absolute: `${meta.title} — ${meta.siteName}` },
+    description: meta.description,
+    keywords: meta.keywords,
+    applicationName: meta.siteName,
+    alternates: {
+      canonical,
+      languages: buildLanguageAlternates(lang),
+    },
+    openGraph: {
+      type: "website",
+      siteName: meta.siteName,
+      title: meta.ogTitle,
+      description: meta.ogDescription,
+      url: canonical,
+      locale: meta.ogLocale,
+      alternateLocale: [...alternateLocales],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.ogTitle,
+      description: meta.ogDescription,
+    },
+  };
+}
 
 async function loadFixtures() {
   try {

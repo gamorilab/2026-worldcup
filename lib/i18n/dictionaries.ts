@@ -5,6 +5,15 @@ import type { MatchPhase } from "@/lib/world-cup/types";
 import type { AppLocale } from "./config";
 
 export type AppDictionary = {
+  meta: {
+    siteName: string;
+    title: string;
+    description: string;
+    ogTitle: string;
+    ogDescription: string;
+    keywords: string[];
+    ogLocale: string;
+  };
   page: {
     badge: string;
     title: string;
