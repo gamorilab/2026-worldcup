@@ -20,13 +20,26 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  background-color: var(--background);
+}
+
 body {
-  background:
-    radial-gradient(circle at 10% -10%, rgba(34, 197, 94, 0.12), transparent 35%),
-    radial-gradient(circle at 100% 10%, rgba(56, 189, 248, 0.12), transparent 30%),
-    var(--background);
+  position: relative;
+  background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(34, 197, 94, 0.1), transparent 70%),
+    radial-gradient(ellipse 65% 55% at 100% 10%, rgba(56, 189, 248, 0.1), transparent 70%);
 }
 
 .no-scrollbar {
