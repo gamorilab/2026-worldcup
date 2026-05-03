@@ -44,8 +44,19 @@ export type AppDictionary = {
   matchCard: {
     versus: string;
     kickoffLabel: string;
+    kickoffCountdownLabel: string;
+    startedLabel: string;
+    weekdayLabel: string;
     groupLabel: string;
     matchNumberLabel: string;
+  };
+  countdown: {
+    title: string;
+    startsInLabel: string;
+    unitDays: string;
+    unitHours: string;
+    unitMinutes: string;
+    unitSeconds: string;
   };
   rounds: {
     matchdayPrefix: string;

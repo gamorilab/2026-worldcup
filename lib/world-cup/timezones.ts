@@ -1,5 +1,35 @@
 import type { AppTimezone } from "./types";
 
+export type CountdownParts = {
+  totalMs: number;
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  isStarted: boolean;
+};
+
+export type CountdownUnitLabels = {
+  days: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
+};
+
+const dateTimeFormatterCache = new Map<string, Intl.DateTimeFormat>();
+
+function getCachedDateTimeFormatter(
+  cacheKey: string,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormat {
+  const existing = dateTimeFormatterCache.get(cacheKey);
+  if (existing) return existing;
+  const formatter = new Intl.DateTimeFormat(locale, options);
+  dateTimeFormatterCache.set(cacheKey, formatter);
+  return formatter;
+}
+
 export function parseOpenFootballKickoff(date: string, time: string): string {
   const match = time.match(/^(\d{1,2}):(\d{2})\s+UTC([+-]\d{1,2})$/);
   if (!match) {
@@ -37,7 +67,7 @@ export function formatKickoffInTimezone(
   timezone: AppTimezone,
   locale: string,
 ): string {
-  return new Intl.DateTimeFormat(locale, {
+  const formatter = getCachedDateTimeFormatter(`kickoff:${locale}:${timezone}`, locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -45,17 +75,57 @@ export function formatKickoffInTimezone(
     minute: "2-digit",
     hour12: false,
     timeZone: timezone,
-  }).format(new Date(kickoffUtcIso));
+  });
+  return formatter.format(new Date(kickoffUtcIso));
 }
 
 export function formatDateOnly(dateIso: string, locale: string): string {
   const [year, month, day] = dateIso.split("-").map(Number);
   const date = new Date(Date.UTC(year, (month || 1) - 1, day || 1));
 
-  return new Intl.DateTimeFormat(locale, {
+  const formatter = getCachedDateTimeFormatter(`date-only:${locale}`, locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     timeZone: "UTC",
-  }).format(date);
+  });
+  return formatter.format(date);
+}
+
+export function formatWeekdayInTimezone(
+  kickoffUtcIso: string,
+  timezone: AppTimezone,
+  locale: string,
+  width: "long" | "short" = "long",
+): string {
+  const formatter = getCachedDateTimeFormatter(`weekday:${locale}:${timezone}:${width}`, locale, {
+    weekday: width,
+    timeZone: timezone,
+  });
+  return formatter.format(new Date(kickoffUtcIso));
+}
+
+export function getCountdownToKickoff(kickoffUtcIso: string, nowMs: number): CountdownParts {
+  const kickoffMs = new Date(kickoffUtcIso).getTime();
+  const rawMs = kickoffMs - nowMs;
+  const totalMs = Math.max(0, rawMs);
+  const totalSeconds = Math.floor(totalMs / 1000);
+
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return {
+    totalMs,
+    days,
+    hours,
+    minutes,
+    seconds,
+    isStarted: rawMs <= 0,
+  };
+}
+
+export function formatCountdown(parts: CountdownParts, labels: CountdownUnitLabels): string {
+  return `${parts.days}${labels.days} ${String(parts.hours).padStart(2, "0")}${labels.hours} ${String(parts.minutes).padStart(2, "0")}${labels.minutes} ${String(parts.seconds).padStart(2, "0")}${labels.seconds}`;
 }

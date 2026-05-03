@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -21,6 +21,7 @@ import {
   type Continent,
 } from "@/lib/world-cup/geo";
 import { formatDateOnly } from "@/lib/world-cup/timezones";
+import { formatCountdown, getCountdownToKickoff } from "@/lib/world-cup/timezones";
 import {
   CURATED_TIMEZONES,
   type AppTimezone,
@@ -28,6 +29,7 @@ import {
   type MatchPhase,
   type WorldCupFixture,
 } from "@/lib/world-cup/types";
+import { useSharedNow } from "./use-shared-now";
 
 type ScheduleShellProps = {
   fixtures: WorldCupFixture[];
@@ -62,6 +64,7 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
   const [isPending, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastQueryRef = useRef<string | null>(null);
+  const [isDesktopHover, setIsDesktopHover] = useState(false);
 
   const phase = getPhaseParam(searchParams.get("phase"));
   const group = searchParams.get("group") ?? "all";
@@ -69,11 +72,14 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
   const date = searchParams.get("date") ?? "all";
   const entity = searchParams.get("entity") ?? "";
   const country = getCountryParam(searchParams.get("country"));
-  const hostCountryLabels: Record<WorldCupFixture["hostCountry"], string> = {
-    "United States": dictionary.filters.hostCountryUnitedStates,
-    Mexico: dictionary.filters.hostCountryMexico,
-    Canada: dictionary.filters.hostCountryCanada,
-  };
+  const hostCountryLabels = useMemo<Record<WorldCupFixture["hostCountry"], string>>(
+    () => ({
+      "United States": dictionary.filters.hostCountryUnitedStates,
+      Mexico: dictionary.filters.hostCountryMexico,
+      Canada: dictionary.filters.hostCountryCanada,
+    }),
+    [dictionary.filters.hostCountryCanada, dictionary.filters.hostCountryMexico, dictionary.filters.hostCountryUnitedStates],
+  );
 
   useEffect(() => {
     return () => {
@@ -81,6 +87,14 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
         clearTimeout(debounceRef.current);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const sync = () => setIsDesktopHover(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
   }, []);
 
   const updateParams = (
@@ -175,6 +189,20 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
     "{count}",
     String(filteredFixtures.length),
   );
+
+  const tournamentStartKickoffUtc = useMemo(() => {
+    if (fixtures.length === 0) return null;
+    let earliest = fixtures[0]!.kickoffUtc;
+    let earliestMs = new Date(earliest).getTime();
+    fixtures.forEach((fixture) => {
+      const kickoffMs = new Date(fixture.kickoffUtc).getTime();
+      if (kickoffMs < earliestMs) {
+        earliestMs = kickoffMs;
+        earliest = fixture.kickoffUtc;
+      }
+    });
+    return earliest;
+  }, [fixtures]);
 
   const continentLabels = useMemo<Record<Continent, string>>(
     () => ({
@@ -394,6 +422,13 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
         </section>
 
         <section className="space-y-4">
+          {tournamentStartKickoffUtc ? (
+            <EventStartCountdown
+              kickoffUtc={tournamentStartKickoffUtc}
+              labels={dictionary.countdown}
+            />
+          ) : null}
+
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-zinc-400">{showingMatchesLabel}</p>
             <Button
@@ -428,6 +463,8 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
                       rounds={dictionary.rounds}
                       hostCountryLabels={hostCountryLabels}
                       groupCountriesByGroup={groupCountriesByGroup}
+                      isDesktopHover={isDesktopHover}
+                      countdownUnits={dictionary.countdown}
                     />
                   ))}
                 </div>
@@ -452,6 +489,37 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
             {dictionary.mobileNav.clear}
           </Button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+type EventStartCountdownProps = {
+  kickoffUtc: string;
+  labels: AppDictionary["countdown"];
+};
+
+function EventStartCountdown({ kickoffUtc, labels }: EventStartCountdownProps) {
+  const nowMs = useSharedNow(true);
+  const countdown = getCountdownToKickoff(kickoffUtc, nowMs);
+
+  if (countdown.isStarted) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-3xl border border-lime-300/30 bg-gradient-to-r from-lime-300/10 via-transparent to-cyan-300/10 p-4">
+      <p className="text-xs uppercase tracking-[0.2em] text-zinc-300">{labels.title}</p>
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
+        <p className="text-sm text-zinc-300">{labels.startsInLabel}</p>
+        <p className="text-2xl font-semibold text-lime-200 sm:text-3xl">
+          {formatCountdown(countdown, {
+            days: labels.unitDays,
+            hours: labels.unitHours,
+            minutes: labels.unitMinutes,
+            seconds: labels.unitSeconds,
+          })}
+        </p>
       </div>
     </div>
   );

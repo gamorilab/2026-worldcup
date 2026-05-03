@@ -1,14 +1,20 @@
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { countryMetaFromTeam, flagPathForCountry, localizeCountry } from "@/lib/world-cup/geo";
-import { formatKickoffInTimezone } from "@/lib/world-cup/timezones";
+import {
+  formatCountdown,
+  formatKickoffInTimezone,
+  formatWeekdayInTimezone,
+  getCountdownToKickoff,
+} from "@/lib/world-cup/timezones";
 import type { AppDictionary } from "@/lib/i18n/dictionaries";
 import type { AppLocale } from "@/lib/i18n/config";
 import type { AppTimezone, WorldCupFixture } from "@/lib/world-cup/types";
+import { useSharedNow } from "./use-shared-now";
 
 type MatchCardProps = {
   fixture: WorldCupFixture;
@@ -19,6 +25,8 @@ type MatchCardProps = {
   rounds: AppDictionary["rounds"];
   hostCountryLabels: Record<WorldCupFixture["hostCountry"], string>;
   groupCountriesByGroup: Record<string, { countryKey: string; label: string; flagPath: string }[]>;
+  isDesktopHover: boolean;
+  countdownUnits: AppDictionary["countdown"];
 };
 
 function localizeRound(
@@ -49,10 +57,12 @@ export function MatchCard({
   rounds,
   hostCountryLabels,
   groupCountriesByGroup,
+  isDesktopHover,
+  countdownUnits,
 }: MatchCardProps) {
   const [open, setOpen] = useState(false);
-  const [isDesktopHover, setIsDesktopHover] = useState(false);
   const displayTime = formatKickoffInTimezone(fixture.kickoffUtc, timezone, locale);
+  const weekday = formatWeekdayInTimezone(fixture.kickoffUtc, timezone, locale, "long");
   const shortRound = localizeRound(fixture.round, rounds, phaseLabels);
   const homeCountry = countryMetaFromTeam(fixture.homeTeam)?.key ?? fixture.homeTeam;
   const awayCountry = countryMetaFromTeam(fixture.awayTeam)?.key ?? fixture.awayTeam;
@@ -63,16 +73,8 @@ export function MatchCard({
   const hostFlag = flagPathForCountry(fixture.hostCountry);
   const groupCountries = fixture.group ? (groupCountriesByGroup[fixture.group] ?? []) : [];
 
-  useEffect(() => {
-    const media = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const sync = () => setIsDesktopHover(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-
   return (
-    <Card className="relative overflow-hidden">
+    <Card className="relative overflow-hidden [content-visibility:auto]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(132,204,22,0.2),transparent_45%)]" />
       <CardContent className="relative space-y-4">
         <div className="flex items-center justify-between gap-3">
@@ -117,6 +119,14 @@ export function MatchCard({
           <div>
             <p className="text-xs text-zinc-400">{labels.kickoffLabel}</p>
             <p className="text-lg font-semibold text-white sm:text-xl">{displayTime}</p>
+            <p className="mt-1 text-xs text-lime-300">
+              {labels.kickoffCountdownLabel}:{" "}
+              <CardKickoffCountdown
+                kickoffUtc={fixture.kickoffUtc}
+                labels={labels}
+                countdownUnits={countdownUnits}
+              />
+            </p>
           </div>
           {fixture.group ? (
             <Popover open={open} onOpenChange={setOpen}>
@@ -174,10 +184,61 @@ export function MatchCard({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+          <span>
+            {labels.weekdayLabel}: {weekday}
+          </span>
           <span>{fixture.venue}</span>
           {fixture.matchNumber ? <span>{labels.matchNumberLabel} #{fixture.matchNumber}</span> : null}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+type CardKickoffCountdownProps = {
+  kickoffUtc: string;
+  labels: AppDictionary["matchCard"];
+  countdownUnits: AppDictionary["countdown"];
+};
+
+function CardKickoffCountdown({ kickoffUtc, labels, countdownUnits }: CardKickoffCountdownProps) {
+  const hostRef = useRef<HTMLSpanElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const element = hostRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(Boolean(entry?.isIntersecting));
+      },
+      {
+        root: null,
+        rootMargin: "240px",
+        threshold: 0,
+      },
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const nowMs = useSharedNow(isVisible);
+  const countdown = isVisible ? getCountdownToKickoff(kickoffUtc, nowMs) : null;
+
+  return (
+    <span ref={hostRef}>
+      {!countdown
+        ? "--"
+        : countdown.isStarted
+        ? labels.startedLabel
+        : formatCountdown(countdown, {
+            days: countdownUnits.unitDays,
+            hours: countdownUnits.unitHours,
+            minutes: countdownUnits.unitMinutes,
+            seconds: countdownUnits.unitSeconds,
+          })}
+    </span>
   );
 }

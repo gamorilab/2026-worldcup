@@ -38,8 +38,19 @@
   "matchCard": {
     "versus": "VS",
     "kickoffLabel": "Início no fuso selecionado",
+    "kickoffCountdownLabel": "Começa em",
+    "startedLabel": "Já começou",
+    "weekdayLabel": "Dia da semana",
     "groupLabel": "Grupo",
     "matchNumberLabel": "Jogo"
+  },
+  "countdown": {
+    "title": "Contagem regressiva para o início do evento",
+    "startsInLabel": "Começa em",
+    "unitDays": "d",
+    "unitHours": "h",
+    "unitMinutes": "m",
+    "unitSeconds": "s"
   },
   "rounds": {
     "matchdayPrefix": "Rodada"

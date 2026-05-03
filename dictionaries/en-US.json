@@ -38,8 +38,19 @@
   "matchCard": {
     "versus": "VS",
     "kickoffLabel": "Kickoff in selected Brazil timezone",
+    "kickoffCountdownLabel": "Starts in",
+    "startedLabel": "Started",
+    "weekdayLabel": "Weekday",
     "groupLabel": "Group",
     "matchNumberLabel": "Match"
+  },
+  "countdown": {
+    "title": "Countdown to event kickoff",
+    "startsInLabel": "Starts in",
+    "unitDays": "d",
+    "unitHours": "h",
+    "unitMinutes": "m",
+    "unitSeconds": "s"
   },
   "rounds": {
     "matchdayPrefix": "Matchday"
