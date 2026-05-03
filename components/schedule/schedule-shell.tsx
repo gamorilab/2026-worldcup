@@ -333,7 +333,7 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
           </div>
         </section>
 
-        <section className="space-y-4 rounded-[1.75rem] border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:p-5">
+        <section className="space-y-4 rounded-[1.75rem] border border-white/10 bg-[#0e1426] p-4 sm:p-5">
           <PhaseNav
             value={phase}
             labels={dictionary.phaseLabels}

@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { countryMetaFromTeam, flagPathForCountry, localizeCountry } from "@/lib/world-cup/geo";
 import {
   formatCountdown,
@@ -61,6 +60,7 @@ export function MatchCard({
   countdownUnits,
 }: MatchCardProps) {
   const [open, setOpen] = useState(false);
+  const popoverRootRef = useRef<HTMLDivElement | null>(null);
   const displayTime = formatKickoffInTimezone(fixture.kickoffUtc, timezone, locale);
   const weekday = formatWeekdayInTimezone(fixture.kickoffUtc, timezone, locale, "long");
   const shortRound = localizeRound(fixture.round, rounds, phaseLabels);
@@ -73,9 +73,31 @@ export function MatchCard({
   const hostFlag = flagPathForCountry(fixture.hostCountry);
   const groupCountries = fixture.group ? (groupCountriesByGroup[fixture.group] ?? []) : [];
 
+  useEffect(() => {
+    if (!open) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      const root = popoverRootRef.current;
+      if (!root) return;
+      if (event.target instanceof Node && !root.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open]);
+
   return (
-    <Card className="relative overflow-hidden [content-visibility:auto]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(132,204,22,0.2),transparent_45%)]" />
+    <Card className="relative">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(132,204,22,0.2),transparent_45%)]" />
+      </div>
       <CardContent className="relative space-y-4">
         <div className="flex items-center justify-between gap-3">
           <Badge variant="accent">{shortRound}</Badge>
@@ -129,64 +151,63 @@ export function MatchCard({
             </p>
           </div>
           {fixture.group ? (
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="rounded-full"
-                  onMouseEnter={() => {
-                    if (isDesktopHover) setOpen(true);
-                  }}
-                  onMouseLeave={() => {
-                    if (isDesktopHover) setOpen(false);
-                  }}
-                >
-                  <Badge>
-                    {labels.groupLabel} {fixture.group}
-                  </Badge>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-56 p-3"
-                align="end"
-                onMouseEnter={() => {
-                  if (isDesktopHover) setOpen(true);
-                }}
-                onMouseLeave={() => {
-                  if (isDesktopHover) setOpen(false);
-                }}
+            <div
+              ref={popoverRootRef}
+              className="relative"
+              onMouseEnter={() => {
+                if (isDesktopHover) setOpen(true);
+              }}
+              onMouseLeave={() => {
+                if (isDesktopHover) setOpen(false);
+              }}
+            >
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-haspopup="dialog"
+                onClick={() => setOpen((prev) => !prev)}
+                className="appearance-none rounded-full bg-transparent p-0 [-webkit-tap-highlight-color:transparent]"
+                style={{ outline: "none", boxShadow: "none", border: "none" }}
               >
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-[0.16em] text-zinc-400">
-                    {labels.groupLabel} {fixture.group}
-                  </p>
-                  <div className="space-y-1">
-                    {groupCountries.map((country) => (
-                      <div
-                        key={country.countryKey}
-                        className="flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-zinc-100"
-                      >
-                        <Image
-                          src={country.flagPath}
-                          alt=""
-                          width={20}
-                          height={14}
-                          className="h-3.5 w-5 rounded-[2px] border border-white/20 object-cover"
-                        />
-                        <span>{country.label}</span>
-                      </div>
-                    ))}
+                <Badge>
+                  {labels.groupLabel} {fixture.group}
+                </Badge>
+              </button>
+              {open ? (
+                <div
+                  role="dialog"
+                  className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-60 rounded-2xl border border-white/20 bg-[#1a2238] p-3 text-zinc-100 ring-1 ring-black/40"
+                >
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+                      {labels.groupLabel} {fixture.group}
+                    </p>
+                    <div className="space-y-1">
+                      {groupCountries.map((country) => (
+                        <div
+                          key={country.countryKey}
+                          className="flex items-center gap-2 rounded-lg px-1 py-1 text-sm text-zinc-100"
+                        >
+                          <Image
+                            src={country.flagPath}
+                            alt=""
+                            width={20}
+                            height={14}
+                            className="h-3.5 w-5 rounded-[2px] border border-white/20 object-cover"
+                          />
+                          <span>{country.label}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </PopoverContent>
-            </Popover>
+              ) : null}
+            </div>
           ) : null}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
-          <span>
-            {labels.weekdayLabel}: {weekday}
-          </span>
+          <span className="capitalize">{weekday}</span>
           <span>{fixture.venue}</span>
           {fixture.matchNumber ? <span>{labels.matchNumberLabel} #{fixture.matchNumber}</span> : null}
         </div>
