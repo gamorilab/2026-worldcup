@@ -1,0 +1,76 @@
+{
+  "page": {
+    "badge": "World Cup 2026",
+    "title": "Brazil-time schedule, every match, every phase",
+    "subtitle": "Explore all 104 matches with Brazil timezone conversion and fast navigation across group stage and knockout rounds.",
+    "loading": "Loading World Cup schedule...",
+    "fixtureUnavailable": "Fixture data is temporarily unavailable. Please retry in a few minutes."
+  },
+  "filters": {
+    "timezoneLabel": "Brazil timezone",
+    "hostCountryLabel": "Host country",
+    "hostCountryAll": "All host countries",
+    "hostCountryUnitedStates": "United States",
+    "hostCountryMexico": "Mexico",
+    "hostCountryCanada": "Canada",
+    "matchDateLabel": "Match date",
+    "matchDateAll": "All dates",
+    "searchLabel": "Search team or country",
+    "searchPlaceholder": "Select a team or country",
+    "searchEmpty": "No result found.",
+    "searchTeamsGroup": "Teams",
+    "searchCountriesGroup": "Countries",
+    "allDays": "All days",
+    "allGroups": "All groups",
+    "dateCalendarButton": "Pick date",
+    "clearDate": "Clear date",
+    "updating": "Updating...",
+    "showingMatches": "Showing {count} matches",
+    "resetFilters": "Reset filters",
+    "noMatches": "No matches for the current filters. Relax one filter and try again."
+  },
+  "mobileNav": {
+    "games": "games",
+    "groups": "Groups",
+    "knockout": "Knockout",
+    "clear": "Clear"
+  },
+  "matchCard": {
+    "versus": "VS",
+    "kickoffLabel": "Kickoff in selected Brazil timezone",
+    "groupLabel": "Group",
+    "matchNumberLabel": "Match"
+  },
+  "rounds": {
+    "matchdayPrefix": "Matchday"
+  },
+  "phaseLabels": {
+    "all": "All",
+    "group-stage": "Group Stage",
+    "round-of-32": "Round of 32",
+    "round-of-16": "Round of 16",
+    "quarter-finals": "Quarter-finals",
+    "semi-finals": "Semi-finals",
+    "third-place": "Third-place",
+    "final": "Final"
+  },
+  "timezoneLabels": {
+    "groupBrazil": "Brazil",
+    "groupAmericas": "Americas",
+    "groupEuropeAfrica": "Europe & Africa",
+    "groupAsiaOceania": "Asia & Oceania"
+  },
+  "continents": {
+    "africa": "Africa",
+    "americas": "Americas",
+    "asia": "Asia",
+    "europe": "Europe",
+    "oceania": "Oceania"
+  },
+  "language": {
+    "label": "Language",
+    "ptBR": "Portuguese (Brazil)",
+    "enUS": "English (US)",
+    "esES": "Spanish (Spain)"
+  }
+}

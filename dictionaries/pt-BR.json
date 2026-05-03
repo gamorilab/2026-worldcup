@@ -1,0 +1,76 @@
+{
+  "page": {
+    "badge": "Copa do Mundo 2026",
+    "title": "Tabela em horário do Brasil, todos os jogos, todas as fases",
+    "subtitle": "Explore os 104 jogos com conversão de horário para o Brasil e navegação rápida entre fase de grupos e mata-mata.",
+    "loading": "Carregando a tabela da Copa do Mundo...",
+    "fixtureUnavailable": "Os dados dos jogos estão indisponíveis no momento. Tente novamente em alguns minutos."
+  },
+  "filters": {
+    "timezoneLabel": "Fuso horário",
+    "hostCountryLabel": "País sede",
+    "hostCountryAll": "Todos os países sede",
+    "hostCountryUnitedStates": "Estados Unidos",
+    "hostCountryMexico": "México",
+    "hostCountryCanada": "Canadá",
+    "matchDateLabel": "Data do jogo",
+    "matchDateAll": "Todas as datas",
+    "searchLabel": "Buscar time ou país",
+    "searchPlaceholder": "Selecione um time ou país",
+    "searchEmpty": "Nenhum resultado encontrado.",
+    "searchTeamsGroup": "Times",
+    "searchCountriesGroup": "Países",
+    "allDays": "Todos os dias",
+    "allGroups": "Todos os grupos",
+    "dateCalendarButton": "Escolher data",
+    "clearDate": "Limpar data",
+    "updating": "Atualizando...",
+    "showingMatches": "Exibindo {count} jogos",
+    "resetFilters": "Limpar filtros",
+    "noMatches": "Nenhum jogo para os filtros atuais. Ajuste os filtros e tente novamente."
+  },
+  "mobileNav": {
+    "games": "jogos",
+    "groups": "Grupos",
+    "knockout": "Mata-mata",
+    "clear": "Limpar"
+  },
+  "matchCard": {
+    "versus": "VS",
+    "kickoffLabel": "Início no fuso selecionado",
+    "groupLabel": "Grupo",
+    "matchNumberLabel": "Jogo"
+  },
+  "rounds": {
+    "matchdayPrefix": "Rodada"
+  },
+  "phaseLabels": {
+    "all": "Tudo",
+    "group-stage": "Fase de grupos",
+    "round-of-32": "16 avos",
+    "round-of-16": "Oitavas",
+    "quarter-finals": "Quartas",
+    "semi-finals": "Semifinais",
+    "third-place": "Terceiro lugar",
+    "final": "Final"
+  },
+  "timezoneLabels": {
+    "groupBrazil": "Brasil",
+    "groupAmericas": "Américas",
+    "groupEuropeAfrica": "Europa e África",
+    "groupAsiaOceania": "Ásia e Oceania"
+  },
+  "continents": {
+    "africa": "África",
+    "americas": "Américas",
+    "asia": "Ásia",
+    "europe": "Europa",
+    "oceania": "Oceania"
+  },
+  "language": {
+    "label": "Idioma",
+    "ptBR": "Português (Brasil)",
+    "enUS": "Inglês (EUA)",
+    "esES": "Espanhol (Espanha)"
+  }
+}

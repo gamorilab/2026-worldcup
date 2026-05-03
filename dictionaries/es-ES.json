@@ -1,0 +1,76 @@
+{
+  "page": {
+    "badge": "Copa del Mundo 2026",
+    "title": "Calendario en horario de Brasil, todos los partidos, todas las fases",
+    "subtitle": "Explora los 104 partidos con conversion exacta al horario de Brasil y navegacion rapida entre fase de grupos y eliminatorias.",
+    "loading": "Cargando el calendario del Mundial...",
+    "fixtureUnavailable": "Los datos de partidos no estan disponibles temporalmente. Intentalo de nuevo en unos minutos."
+  },
+  "filters": {
+    "timezoneLabel": "Zona horaria de Brasil",
+    "hostCountryLabel": "Pais anfitrion",
+    "hostCountryAll": "Todos los paises anfitriones",
+    "hostCountryUnitedStates": "Estados Unidos",
+    "hostCountryMexico": "Mexico",
+    "hostCountryCanada": "Canada",
+    "matchDateLabel": "Fecha del partido",
+    "matchDateAll": "Todas las fechas",
+    "searchLabel": "Buscar equipo o país",
+    "searchPlaceholder": "Selecciona un equipo o país",
+    "searchEmpty": "No se encontraron resultados.",
+    "searchTeamsGroup": "Equipos",
+    "searchCountriesGroup": "Países",
+    "allDays": "Todos los dias",
+    "allGroups": "Todos los grupos",
+    "dateCalendarButton": "Elegir fecha",
+    "clearDate": "Limpiar fecha",
+    "updating": "Actualizando...",
+    "showingMatches": "Mostrando {count} partidos",
+    "resetFilters": "Reiniciar filtros",
+    "noMatches": "No hay partidos para los filtros actuales. Ajusta un filtro e intentalo de nuevo."
+  },
+  "mobileNav": {
+    "games": "partidos",
+    "groups": "Grupos",
+    "knockout": "Eliminatorias",
+    "clear": "Limpiar"
+  },
+  "matchCard": {
+    "versus": "VS",
+    "kickoffLabel": "Inicio en la zona horaria de Brasil seleccionada",
+    "groupLabel": "Grupo",
+    "matchNumberLabel": "Partido"
+  },
+  "rounds": {
+    "matchdayPrefix": "Jornada"
+  },
+  "phaseLabels": {
+    "all": "Todo",
+    "group-stage": "Fase de grupos",
+    "round-of-32": "Dieciseisavos",
+    "round-of-16": "Octavos",
+    "quarter-finals": "Cuartos",
+    "semi-finals": "Semifinales",
+    "third-place": "Tercer puesto",
+    "final": "Final"
+  },
+  "timezoneLabels": {
+    "groupBrazil": "Brasil",
+    "groupAmericas": "Américas",
+    "groupEuropeAfrica": "Europa y África",
+    "groupAsiaOceania": "Asia y Oceanía"
+  },
+  "continents": {
+    "africa": "África",
+    "americas": "Américas",
+    "asia": "Asia",
+    "europe": "Europa",
+    "oceania": "Oceanía"
+  },
+  "language": {
+    "label": "Idioma",
+    "ptBR": "Portugues (Brasil)",
+    "enUS": "Ingles (EE. UU.)",
+    "esES": "Espanol (Espana)"
+  }
+}
