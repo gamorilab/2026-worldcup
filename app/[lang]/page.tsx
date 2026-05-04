@@ -12,6 +12,11 @@ type LangPageProps = {
   params: Promise<{ lang: string }>;
 };
 
+const SOCIAL_IMAGE_ALT =
+  "FIFA World Cup 2026 trophy - schedule of all 104 matches in Brazil time.";
+const OG_IMAGE_PATH = "/opengraph-image.png";
+const TWITTER_IMAGE_PATH = "/twitter-image.png";
+
 export async function generateMetadata({ params }: LangPageProps): Promise<Metadata> {
   const { lang } = await params;
 
@@ -43,11 +48,23 @@ export async function generateMetadata({ params }: LangPageProps): Promise<Metad
       url: canonical,
       locale: meta.ogLocale,
       alternateLocale: [...alternateLocales],
+      images: [
+        {
+          url: OG_IMAGE_PATH,
+          alt: SOCIAL_IMAGE_ALT,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: meta.ogTitle,
       description: meta.ogDescription,
+      images: [
+        {
+          url: TWITTER_IMAGE_PATH,
+          alt: SOCIAL_IMAGE_ALT,
+        },
+      ],
     },
   };
 }
