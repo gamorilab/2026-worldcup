@@ -52,6 +52,13 @@
     "knockout": "Eliminatorias",
     "clear": "Limpiar"
   },
+  "favorites": {
+    "title": "Partidos favoritos",
+    "empty": "Todavia no marcaste ningun partido como favorito.",
+    "itemsCount": "{count} favoritos",
+    "add": "Agregar partido a favoritos",
+    "remove": "Quitar partido de favoritos"
+  },
   "matchCard": {
     "versus": "VS",
     "kickoffLabel": "Inicio en la zona horaria de Brasil seleccionada",

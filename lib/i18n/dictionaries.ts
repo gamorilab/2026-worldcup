@@ -50,6 +50,13 @@ export type AppDictionary = {
     knockout: string;
     clear: string;
   };
+  favorites: {
+    title: string;
+    empty: string;
+    itemsCount: string;
+    add: string;
+    remove: string;
+  };
   matchCard: {
     versus: string;
     kickoffLabel: string;

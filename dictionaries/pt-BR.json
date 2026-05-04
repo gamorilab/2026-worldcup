@@ -53,6 +53,13 @@
     "knockout": "Mata-mata",
     "clear": "Limpar"
   },
+  "favorites": {
+    "title": "Jogos favoritos",
+    "empty": "Você ainda não favoritou nenhum jogo.",
+    "itemsCount": "{count} favoritos",
+    "add": "Adicionar jogo aos favoritos",
+    "remove": "Remover jogo dos favoritos"
+  },
   "matchCard": {
     "versus": "VS",
     "kickoffLabel": "Início no fuso selecionado",

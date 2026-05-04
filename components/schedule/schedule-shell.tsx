@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Star } from "lucide-react";
 
 import { GroupNav } from "@/components/schedule/group-nav";
+import { HorizontalDragScroll } from "@/components/schedule/horizontal-drag-scroll";
 import { LanguageSwitcher } from "@/components/schedule/language-switcher";
 import { MatchCard } from "@/components/schedule/match-card";
 import { PHASE_ITEMS, PhaseNav } from "@/components/schedule/phase-nav";
@@ -20,7 +22,7 @@ import {
   localizeCountry,
   type Continent,
 } from "@/lib/world-cup/geo";
-import { formatDateOnly } from "@/lib/world-cup/timezones";
+import { formatDateOnly, formatKickoffInTimezone } from "@/lib/world-cup/timezones";
 import { formatCountdown, getCountdownToKickoff } from "@/lib/world-cup/timezones";
 import {
   CURATED_TIMEZONES,
@@ -40,6 +42,18 @@ type ScheduleShellProps = {
 const PHASE_SET = new Set(PHASE_ITEMS);
 const HOST_COUNTRIES: HostCountry[] = ["all", "United States", "Mexico", "Canada"];
 const DEBOUNCE_MS = 220;
+const FAVORITES_STORAGE_KEY = "copa.favorite-fixtures.v1";
+const FAVORITE_CHIP_TRANSITION = { duration: 0.18, ease: [0.2, 0.8, 0.2, 1] } as const;
+const FAVORITE_CHIP_MOTION = {
+  initial: { opacity: 0, y: 10, scale: 0.985 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -8, scale: 0.985 },
+} as const;
+const FAVORITE_CHIP_REDUCED_MOTION = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+} as const;
 
 function getPhaseParam(value: string | null): MatchPhase {
   return value && PHASE_SET.has(value as MatchPhase) ? (value as MatchPhase) : "all";
@@ -64,7 +78,10 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
   const [isPending, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastQueryRef = useRef<string | null>(null);
+  const favoritesHydratedRef = useRef(false);
   const [isDesktopHover, setIsDesktopHover] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+  const [favoriteFixtureIds, setFavoriteFixtureIds] = useState<string[]>([]);
 
   const phase = getPhaseParam(searchParams.get("phase"));
   const group = searchParams.get("group") ?? "all";
@@ -96,6 +113,42 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
+      if (!raw) {
+        favoritesHydratedRef.current = true;
+        return;
+      }
+
+      const parsed: unknown = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        favoritesHydratedRef.current = true;
+        return;
+      }
+
+      const normalized = Array.from(
+        new Set(parsed.filter((value): value is string => typeof value === "string")),
+      );
+
+      window.setTimeout(() => {
+        setFavoriteFixtureIds(normalized);
+        favoritesHydratedRef.current = true;
+      }, 0);
+    } catch {
+      favoritesHydratedRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!favoritesHydratedRef.current) return;
+    try {
+      window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteFixtureIds));
+    } catch {
+      // Ignore storage write errors (private mode / quota).
+    }
+  }, [favoriteFixtureIds]);
 
   const updateParams = (
     updates: Record<string, string | null>,
@@ -184,6 +237,36 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
     });
     return Array.from(groups.entries());
   }, [filteredFixtures]);
+
+  const favoriteFixtureIdSet = useMemo(() => new Set(favoriteFixtureIds), [favoriteFixtureIds]);
+
+  const favoriteFixtures = useMemo(() => {
+    if (favoriteFixtureIdSet.size === 0) return [];
+    return fixtures
+      .filter((fixture) => favoriteFixtureIdSet.has(fixture.id))
+      .sort((left, right) => new Date(left.kickoffUtc).getTime() - new Date(right.kickoffUtc).getTime());
+  }, [favoriteFixtureIdSet, fixtures]);
+
+  const toggleFavoriteFixture = (fixtureId: string) => {
+    setFavoriteFixtureIds((current) => {
+      const next = new Set(current);
+      if (next.has(fixtureId)) {
+        next.delete(fixtureId);
+      } else {
+        next.add(fixtureId);
+      }
+      return Array.from(next);
+    });
+  };
+
+  const openFavoriteFixture = (fixture: WorldCupFixture) => {
+    updateParams({ date: fixture.date });
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        document.getElementById("games-list-start")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  };
 
   const showingMatchesLabel = dictionary.filters.showingMatches.replace(
     "{count}",
@@ -399,10 +482,11 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
                 </span>
               ) : null}
             </div>
-            <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+            <HorizontalDragScroll className="-mx-1 flex gap-2 px-1 pb-1">
               <Button
                 size="sm"
                 variant={date === "all" ? "solid" : "outline"}
+                className="shrink-0"
                 onClick={() => updateParams({ date: null })}
               >
                 {dictionary.filters.allDays}
@@ -412,12 +496,13 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
                   key={day}
                   size="sm"
                   variant={date === day ? "solid" : "outline"}
+                  className="shrink-0"
                   onClick={() => updateParams({ date: day })}
                 >
                   {formatDateOnly(day, locale)}
                 </Button>
               ))}
-            </div>
+            </HorizontalDragScroll>
           </div>
         </section>
 
@@ -440,6 +525,82 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
               {dictionary.filters.resetFilters}
             </Button>
           </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-zinc-200">{dictionary.favorites.title}</p>
+              {favoriteFixtures.length > 0 ? (
+                <p className="text-xs text-zinc-400">
+                  {dictionary.favorites.itemsCount.replace("{count}", String(favoriteFixtures.length))}
+                </p>
+              ) : null}
+            </div>
+
+            {favoriteFixtures.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-white/20 bg-white/5 p-5 text-sm text-zinc-300">
+                {dictionary.favorites.empty}
+              </div>
+            ) : (
+              <HorizontalDragScroll className="no-scrollbar -mx-2 px-2 pb-2">
+                <div className="flex items-center gap-2">
+                  <AnimatePresence initial={false}>
+                    {favoriteFixtures.map((fixture) => (
+                      <motion.div
+                        key={fixture.id}
+                        className="shrink-0"
+                        layout={!prefersReducedMotion}
+                        initial={
+                          prefersReducedMotion
+                            ? FAVORITE_CHIP_REDUCED_MOTION.initial
+                            : FAVORITE_CHIP_MOTION.initial
+                        }
+                        animate={
+                          prefersReducedMotion
+                            ? FAVORITE_CHIP_REDUCED_MOTION.animate
+                            : FAVORITE_CHIP_MOTION.animate
+                        }
+                        exit={
+                          prefersReducedMotion
+                            ? FAVORITE_CHIP_REDUCED_MOTION.exit
+                            : FAVORITE_CHIP_MOTION.exit
+                        }
+                        transition={FAVORITE_CHIP_TRANSITION}
+                      >
+                        <div className="inline-flex h-12 items-center overflow-hidden rounded-full border border-amber-300/35 bg-[#111a2f]/95 text-zinc-100 shadow-[0_0_0_1px_rgba(252,211,77,0.18)]">
+                          <button
+                            type="button"
+                            className="inline-flex h-full min-w-0 max-w-[16rem] items-center gap-2 px-3 text-left hover:bg-white/5"
+                            onClick={() => openFavoriteFixture(fixture)}
+                            title={`${fixture.homeTeam} ${dictionary.matchCard.versus} ${fixture.awayTeam}`}
+                          >
+                            <span className="truncate text-xs font-semibold">
+                              {fixture.homeTeam} {dictionary.matchCard.versus} {fixture.awayTeam}
+                            </span>
+                            <span className="shrink-0 text-[11px] text-zinc-300">
+                              {formatKickoffInTimezone(fixture.kickoffUtc, timezone, locale)}
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex h-full w-10 items-center justify-center border-l border-amber-300/25 text-amber-200 hover:bg-amber-300/10"
+                            onClick={() => toggleFavoriteFixture(fixture.id)}
+                            aria-label={dictionary.favorites.remove}
+                            title={dictionary.favorites.remove}
+                          >
+                            <Star className="h-3.5 w-3.5 fill-amber-300" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </HorizontalDragScroll>
+            )}
+          </div>
+
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+          <div id="games-list-start" />
 
           {groupedByDate.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-white/20 bg-white/5 p-8 text-center text-sm text-zinc-300">
@@ -465,6 +626,12 @@ export function ScheduleShell({ fixtures, locale, dictionary }: ScheduleShellPro
                       groupCountriesByGroup={groupCountriesByGroup}
                       isDesktopHover={isDesktopHover}
                       countdownUnits={dictionary.countdown}
+                      isFavorite={favoriteFixtureIdSet.has(fixture.id)}
+                      onToggleFavorite={toggleFavoriteFixture}
+                      favoriteLabels={{
+                        add: dictionary.favorites.add,
+                        remove: dictionary.favorites.remove,
+                      }}
                     />
                   ))}
                 </div>

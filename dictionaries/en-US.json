@@ -52,6 +52,13 @@
     "knockout": "Knockout",
     "clear": "Clear"
   },
+  "favorites": {
+    "title": "Favorite matches",
+    "empty": "You have not favorited any matches yet.",
+    "itemsCount": "{count} favorites",
+    "add": "Add match to favorites",
+    "remove": "Remove match from favorites"
+  },
   "matchCard": {
     "versus": "VS",
     "kickoffLabel": "Kickoff in selected Brazil timezone",
